@@ -14,7 +14,7 @@ Just put the view in the layout xml, no Java code is required.
 		android:layout_height="match_parent"
 		app:realtimeBlurRadius="20dp"
 		app:realtimeOverlayColor="#8000" />
-	
+
 	// Views above blurring overlay
 	<Button ../>
 
