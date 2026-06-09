@@ -12,6 +12,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowInsets;
+import android.view.WindowInsetsController;
+import android.view.WindowManager;
 import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -31,7 +35,10 @@ public class MainActivity extends Activity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		enableFullscreen();
 		setContentView(R.layout.activity_main);
+
+		enableBlurBehind();
 
 		blurView = (RealtimeBlurView) findViewById(R.id.blur_view);
 		((ListView) findViewById(R.id.list)).setAdapter(new MyListAdapter(this, R.layout.list_item));
@@ -93,8 +100,39 @@ public class MainActivity extends Activity {
 		});
 	}
 
+	private void enableFullscreen() {
+		requestWindowFeature(Window.FEATURE_NO_TITLE);
+		Window w = getWindow();
+		if (getActionBar() != null) {
+			getActionBar().hide();
+		}
+		w.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+		w.setStatusBarColor(0);
+		w.setDecorFitsSystemWindows(false);
+		WindowInsetsController c = w.getInsetsController();
+		if (c != null) {
+			c.hide(WindowInsets.Type.navigationBars());
+			c.setSystemBarsBehavior(
+					WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+		}
+	}
+
+	private void enableBlurBehind() {
+		WindowManager wm = (WindowManager) getSystemService(WINDOW_SERVICE);
+		if (wm == null || !wm.isCrossWindowBlurEnabled()) {
+			return;
+		}
+		Window w = getWindow();
+		WindowManager.LayoutParams lp = w.getAttributes();
+		int radiusPx = (int) TypedValue.applyDimension(
+				TypedValue.COMPLEX_UNIT_DIP, 15, getResources().getDisplayMetrics());
+		lp.setBlurBehindRadius(radiusPx);
+		lp.flags |= WindowManager.LayoutParams.FLAG_BLUR_BEHIND;
+		w.setAttributes(lp);
+	}
+
 	private void updateRadius() {
-		blurView.setBlurRadius(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, blurRadius.getProgress(), getResources().getDisplayMetrics()));
+//		blurView.setBlurRadius(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, blurRadius.getProgress(), getResources().getDisplayMetrics()));
 		blurRadiusText.setText(blurRadius.getProgress() + "dp");
 	}
 
